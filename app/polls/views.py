@@ -1,30 +1,53 @@
 from .models import ProductType, Product, Member, Rating, Comment, Transaction, Cart
 from rest_framework import permissions, viewsets
 from django.contrib.auth.models import User
-from .serializers import (ProductTypeSerializer, ProductSerializer,
-                         RatingSerializer, CommentSerializer, # MemberSerializer, 
-                        CommentUpdateSerializer, TransactionSerializer, CartSerializer, 
-                        UserBasicSerializer, UserSerializer, UserUpdateSerializer)
+from .serializers import *
 from rest_framework import permissions
 from .permissions import IsOwnerOrReadOnly, IsCurrentUserOrReadOnly
 from .schema import ProductSchema
+#from rest_framework.schemas.openapi import AutoSchema
+from .myapi import AutismSchema as AutoSchema
 
-class HomeAPIView(viewsets.ModelViewSet):
-    schema = ProductSchema()
+from django.shortcuts import get_object_or_404
+
+from drf_yasg import openapi
+
+
+# бесполезные декораторы, которые не помогают
+# from rest_framework.decorators import api_view
+# from drf_yasg.utils import swagger_auto_schema
+# from django.utils.decorators import method_decorator
+from rest_framework.decorators import action
+
+
+'''
+Django ViewSet actions:
+list -- GET - список
+retrieve -- GET - одну запись
+create -- POST
+update -- PUT
+partial_update -- PATCH - обновление частичное (1 поле, например)
+destroy -- DELETE
+'''
+
+
+class ProductAPIView(viewsets.ModelViewSet):
+    '''
+    Товары, хранящиеся в каталоге.
+    Поля: ID, тип, название, описание, количество в наличии, цена, изображение (опционально).
+    '''
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    schema = AutoSchema(
+        tags=['Товары'],
+    )
+
 
     def get_queryset(self):
+        '''
+        Функция для получения списка товаров. (а также несколько заложенных на будущее фильтров)
+        '''
         list_products = self.queryset
-        # query = self.request.query_params.get('sortBy')
-        # if (query is not None):
-        #     if (query == 'favs'):
-        #         list_webmarketes = list_products.most_favs()
-        #     elif (query == 'comments'):
-        #         list_webmarketes = list_products.most_comments()
-        #     else:
-        #         list_webmarketes = list_products.alph()
-
         query = self.request.query_params.get('favourite')
         user = self.request.user
         if (query is not None and user is not None):
@@ -32,6 +55,9 @@ class HomeAPIView(viewsets.ModelViewSet):
         return list_products
 
     def get_permissions(self):
+        '''
+        Функция проверки разрешений на применяемые к каталогу товаров запросы.
+        '''
         if self.request.method not in permissions.SAFE_METHODS:
             return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
@@ -39,93 +65,196 @@ class HomeAPIView(viewsets.ModelViewSet):
     def get_serializer_class(self):
         return self.serializer_class
 
-class CommentAPIView(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    permission_classes = [
-        permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
-    def get_serializer_class(self):
-        if self.action == 'update':
-            return CommentUpdateSerializer
-        return CommentSerializer
+class ProductTypeAPIView(viewsets.ModelViewSet):
+    '''
+    Типы товаров.
+    Поля: ID, название, описание.
+    '''
+    schema = AutoSchema(
+        tags=['Тип товара'],
+    )
+    queryset = ProductType.objects.all()
+    serializer_class = ProductTypeSerializer
+
+    def get_permissions(self):
+        '''
+        Функция проверки разрешений на применяемые к типу товаров запросы.
+        '''
+        if self.request.method not in permissions.SAFE_METHODS:
+            return [permissions.IsAdminUser()]
+        return [permissions.IsAuthenticated()]
+
 
 class UserAPIView(viewsets.ModelViewSet):
+    '''
+    Участники (пользователи), зарегистрированные на сайте.
+    Поля: ID, логин, пароль.
+    (опционально - другие персональные данные)
+    '''
+    schema = AutoSchema(
+        tags=['Участники'],
+    )
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def get_serializer_class(self):
+        '''
+        Функция определения сериалайзера.
+        '''
         if self.action == 'update':
             return UserUpdateSerializer
         return UserSerializer
 
     def get_permissions(self):
+        '''
+        Функция проверки разрешений на применяемые к списку участников запросы.
+        '''
         if self.action in ('update', 'partial_update', 'destroy'):
             return [permissions.IsAuthenticated(), IsCurrentUserOrReadOnly()]
         elif self.action == 'create':
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
+    
+    
+    #@action(detail=True, methods=['get']) # - добавляется в список методов отдельно, не то
+    # используется для одиночного get 
+    def get_object(self):
+        '''
+        Функция, используемая в качестве (одиночного -- retrieve) GET запроса.
+        '''
+        obj = get_object_or_404(User.objects.filter(id=self.kwargs["pk"]))
+        self.check_object_permissions(self.request, obj)
+        return obj
 
-class ProductTypeAPIView(viewsets.ModelViewSet):
-    queryset = ProductType.objects.all()
-    serializer_class = ProductTypeSerializer
+    # используется для множественного get 
+    def get_queryset(self):
+        '''
+        Функция, используемая в качестве (множественного -- list) GET запроса.
+        '''
+        user = self.request.user
+        if user.is_superuser:
+            return User.objects.all()
+        return User.objects.filter(username=user.username)
+
+
+class CommentsAPIView(viewsets.ModelViewSet):
+    '''
+    Комментарии, оставленные участниками на сайте к определенным товарам.
+    Поля: IDкомментария, IDавтора, IDтовара, текст, дата.
+    '''
+    schema = AutoSchema(
+        tags=['Комментарии'],
+    )
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
     def get_permissions(self):
-        if self.request.method not in permissions.SAFE_METHODS:
-            return [permissions.IsAdminUser()]
-        return [permissions.IsAuthenticated()]
+        '''
+        Функция проверки разрешений на применяемые к комментариям запросы.
+        '''
+        if self.action in ('list', 'retrieve'):
+            return [permissions.AllowAny()]
+        elif self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        else:
+            return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
+
+    def get_serializer_class(self):
+        '''
+        Функция определения сериалайзера.
+        '''
+        return self.serializer_class
+
+
+class RatingsAPIView(viewsets.ModelViewSet):
+    '''
+    Оценки, оставленные участниками на сайте к определенным товарам.
+    Поля: IDоценки, IDавтора, IDтовара, значение.
+    '''
+    schema = AutoSchema(
+        tags=['Оценки'],
+    )
+    queryset = Rating.objects.all()
+    serializer_class = RatingSerializer
+
+    permission_classes = [
+        permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_permissions(self):
+        '''
+        Функция проверки разрешений на применяемые к оценкам запросы.
+        '''
+        if self.action in ('list', 'retrieve', 'create', 'partial_update'):
+            return [permissions.IsAuthenticated()]
+        else:
+            return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
+
+    def get_serializer_class(self):
+        '''
+        Функция определения сериалайзера.
+        '''
+        if self.action == 'update':
+            return RatingUpdateSerializer
+        return RatingSerializer
+
+
+class TransactionsAPIView(viewsets.ModelViewSet):
+    '''
+    Заказы, созданные участниками.
+    Поля: IDзаказа, IDучастника, IDтоваров, количества_товаров, статус, дата.
+    '''
+    schema = AutoSchema(
+        tags=['Заказы'],
+    )
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer
+
+    permission_classes = [
+        permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_permissions(self):
+        '''
+        Функция проверки разрешений на применяемые к заказам запросы.
+        '''
+        if self.action in ('retrieve', 'create', 'partial_update'):
+            return [permissions.IsAuthenticated(), IsOwnerOrReadOnly()]
+        else:
+            return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
+
+    def get_serializer_class(self):
+        '''
+        Функция определения сериалайзера.
+        '''
+        return self.serializer_class
         
-################# Дописать для остального.
 
+class CartsAPIView(viewsets.ModelViewSet):
+    '''
+    Корзина, принадлежащая участнику и позволяющая хранить товары из каталога для совершения заказа.
+    Поля: IDкорзина, IDучастника, IDтоваров, количества_товаров, количество_видов_товаров.
+    '''
+    schema = AutoSchema(
+        tags=['Корзины'],
+    )
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
 
-        
+    permission_classes = [
+        permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
+    def get_permissions(self):
+        '''
+        Функция проверки разрешений на применяемые к корзине запросы.
+        '''
+        if self.action in ('retrieve', 'create', 'partial_update'):
+            return [permissions.IsAuthenticated(), IsOwnerOrReadOnly()]
+        else:
+            return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# class ProductTypesAPIView(viewsets.ModelViewSet):
-#     queryset = ProductType.objects.all()
-#     serializer_class = ProductTypeSerializer
-#     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-# class ProductsAPIView(viewsets.ModelViewSet):
-#     queryset = Product.objects.all()
-#     serializer_class = ProductSerializer
-#     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-# # class MembersAPIView(viewsets.ModelViewSet):
-# #     queryset = Member.objects.all()
-# #     serializer_class = MemberSerializer
-# #     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-# class RatingsAPIView(viewsets.ModelViewSet):
-#     queryset = Rating.objects.all()
-#     serializer_class = RatingSerializer
-#     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-# class CommentsAPIView(viewsets.ModelViewSet):
-#     queryset = Comment.objects.all()
-#     serializer_class = CommentSerializer
-#     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-# class TransactionsAPIView(viewsets.ModelViewSet):
-#     queryset = Transaction.objects.all()
-#     serializer_class = TransactionSerializer
-#     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-
-# class CartsAPIView(viewsets.ModelViewSet):
-#     queryset = Cart.objects.all()
-#     serializer_class = CartSerializer
-#     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    def get_serializer_class(self):
+        '''
+        Функция определения сериалайзера.
+        '''
+        return self.serializer_class

@@ -104,8 +104,8 @@ class Comment(models.Model):
 class Transaction(models.Model):
     transactionID = models.IntegerField(primary_key=True)
     memberID = models.ForeignKey(Member, on_delete=CASCADE)
-    productID = models.ForeignKey(Product, on_delete=CASCADE)
-    quantity = models.IntegerField()
+    productIDs = ArrayField(models.IntegerField(), default=list())
+    productQuantities = ArrayField(models.SmallIntegerField(), default=list())
     approvalStatus = models.CharField(max_length=10)
     transactionDate = models.DateField(auto_now_add=True)
 
@@ -116,8 +116,8 @@ class Transaction(models.Model):
         return reverse('application-detail', args=[str(self.transactionID)])
     
     class Meta:
-        verbose_name = 'транзакция'
-        verbose_name_plural = 'транзакции'
+        verbose_name = 'заказ'
+        verbose_name_plural = 'заказы'
 
 class Cart(models.Model):
     cartID = models.IntegerField(primary_key=True)

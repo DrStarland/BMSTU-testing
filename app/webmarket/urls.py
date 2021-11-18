@@ -23,7 +23,7 @@ from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify
 urlpatterns = [
     path('api/v1/', include('polls.urls')),
     path('admin/', admin.site.urls),
-    #path('legacy/', include('polls.urls')), # potom izmenitsya
+    # path('legacy/', include('polls.urls')), # potom izmenitsya
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url('api-token-auth/', obtain_jwt_token),
     url('api-token-refresh/', refresh_jwt_token),

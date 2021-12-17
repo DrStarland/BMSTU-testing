@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Rating',
             fields=[
-                ('raitingID', models.IntegerField(primary_key=True, serialize=False)),
+                ('ratingID', models.IntegerField(primary_key=True, serialize=False)),
                 ('value', models.SmallIntegerField()),
                 ('memberID', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='polls.member')),
                 ('productID', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='polls.product')),

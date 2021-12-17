@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-&xel%)_jj1o@0#!$7dq15l7@o3#td7mgo3ki194(*7uan&4k#8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'backend']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*']
 
 
 # Application definition
@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_filters',
     'sslserver',
-    'api'
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -146,6 +146,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
+    
 }
 
 JWT_AUTH = {

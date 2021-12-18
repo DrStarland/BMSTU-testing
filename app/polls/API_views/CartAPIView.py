@@ -30,8 +30,8 @@ class CartsAPIView(viewsets.ModelViewSet):
         '''
         Функция проверки разрешений на применяемые к корзине запросы.
         '''
-        if self.action in ('retrieve', 'create', 'partial_update'):
-            return [permissions.IsAuthenticated(), IsOwnerOrReadOnly()]
+        if self.action in ('list', 'retrieve', 'create', 'partial_update', 'destroy'):
+            return [permissions.IsAuthenticated()]
         else:
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
 

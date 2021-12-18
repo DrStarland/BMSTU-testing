@@ -25,7 +25,6 @@ class ProductAPIView(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        print("I am get_queryset in ProductAPIView.py")
         '''
         Функция для получения списка товаров. (а также несколько заложенных на будущее фильтров)
         '''
@@ -40,8 +39,8 @@ class ProductAPIView(viewsets.ModelViewSet):
         '''
         Функция проверки разрешений на применяемые к каталогу товаров запросы.
         '''
-        if self.request.method not in permissions.SAFE_METHODS:
-            return [permissions.IsAdminUser()]
+        # if self.request.method not in permissions.SAFE_METHODS:
+        #     return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
 
     def get_serializer_class(self):

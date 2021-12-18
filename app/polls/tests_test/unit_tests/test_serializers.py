@@ -94,7 +94,7 @@ class CartSerializerTest(TestCase):
 
     def test_included_fields(self):
         data = self.test_cart_serializer.data
-        self.assertEqual(set(data.keys()), {'cartID', 'productIDs', 'productQuantities'})
+        self.assertEqual(set(data.keys()), {'cartID', 'memberID', 'productIDs', 'productQuantities', 'quantity'})
         print(data.keys())
 
     def test_cart_field_content(self):

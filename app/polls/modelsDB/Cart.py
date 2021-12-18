@@ -13,7 +13,7 @@ class Cart(models.Model):
     cartID = models.IntegerField(primary_key=True)
     #memberID = models.ForeignKey(Member, on_delete=CASCADE)
 
-    memberID = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    memberID = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     productIDs = ArrayField(models.IntegerField())
     productQuantities = ArrayField(models.SmallIntegerField())
     quantity = models.IntegerField()

@@ -30,7 +30,7 @@ class RatingsAPIView(viewsets.ModelViewSet):
         '''
         Функция проверки разрешений на применяемые к оценкам запросы.
         '''
-        if self.action in ('list', 'retrieve', 'create', 'partial_update'):
+        if self.action in ('list', 'retrieve', 'create', 'partial_update', 'destroy'):
             return [permissions.IsAuthenticated()]
         else:
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]

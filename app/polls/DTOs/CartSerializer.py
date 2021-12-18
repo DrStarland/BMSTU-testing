@@ -8,9 +8,10 @@ from django.http.response import JsonResponse
 from ..modelsDB.Cart import *
 
 class CartSerializer(serializers.HyperlinkedModelSerializer):
+    memberID = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
     class Meta:
         model = Cart
-        fields = ('cartID', 'productIDs', 'productQuantities',)
+        fields = ('cartID', 'memberID', 'productIDs', 'productQuantities', 'quantity')
     
     def create(self, validated_data):
         #validated_data['memberID'] = validated_data.pop('current_user')

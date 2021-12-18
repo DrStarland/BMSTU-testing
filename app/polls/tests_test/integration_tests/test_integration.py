@@ -5,11 +5,11 @@ from rest_framework import permissions
 #from catalog.models import City, Industry, Company, JobVacancy, Application
 #from catalog.views import ApplicationsAPIView, CompaniesAPIView
 
-from ..models import *
-from .unit_tests.builders import UserBuilder, ProductBuilder, ProductTypeBuilder
+from polls.models import *
+from polls.tests_test.unit_tests.builders import UserBuilder, ProductBuilder, ProductTypeBuilder
 from django.contrib.auth.models import User
 
-from ..views import *
+from polls.views import *
 
 class CreateRatingTest(TestCase):
     @classmethod

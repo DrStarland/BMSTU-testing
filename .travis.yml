@@ -6,5 +6,6 @@ before_install:
 install:
   - pip3 install -r requirements.txt
 script:
+  - pg_lsclusters
   - python3 manage.py test polls/tests_test/unit_tests
   - python3 manage.py test polls/tests_test/

@@ -6,7 +6,7 @@ before_install:
 install:
   - pip3 install -r requirements.txt
 script:
-  - sudo pg_ctlcluster 10 main start
+  - sudo service postgresql restart
   - pg_lsclusters
   - python3 manage.py test polls/tests_test/unit_tests
   - python3 manage.py test polls/tests_test/

@@ -25,7 +25,7 @@ class EndToEndTest1(TestCase):
          return self.__get(Product)
 
     def test_get_product_and_set_rating(self):
-        for _ in range(1):
+        for _ in range(100):
             user_data = {
                 'username': 'username',
                 'password': 'password',
@@ -97,7 +97,7 @@ class EndToEndTest2(TestCase):
          return self.__get(Product)
 
     def test_get_product_to_cart(self):
-        for _ in range(1):
+        for _ in range(100):
             user_data = {
                 'username': 'username',
                 'password': 'password',

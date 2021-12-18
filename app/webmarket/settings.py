@@ -89,8 +89,8 @@ DATABASES = {
         'NAME': 'artshop',
         'USER': 'postgres',
         'PASSWORD': '1',
-        'HOST': 'localhost',
-        'PORT': '8000',
+        'HOST': 'postgres',
+        'PORT': '5432',
     }
 }
 

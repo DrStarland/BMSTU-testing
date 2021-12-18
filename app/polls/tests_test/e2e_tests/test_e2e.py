@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from polls.tests_test.unit_tests.builders import UserBuilder, ProductBuilder, ProductTypeBuilder
 from polls.models import *
 
-from pympler import muppy, summary
+# from pympler import muppy, summary
 
 
 class EndToEndTest1(TestCase):
@@ -64,9 +64,10 @@ class EndToEndTest1(TestCase):
             response = self.client.post('/api/v1/Ratings/', data=rating_data)
             self.assertEqual(response.status_code, 201)
 
-            all_objects = muppy.get_objects()
-            sum1 = summary.summarize(all_objects)
-            summary.print_(sum1) 
+            # Memory check
+            # all_objects = muppy.get_objects()
+            # sum1 = summary.summarize(all_objects)
+            # summary.print_(sum1) 
 
             response = self.client.delete(f"/api/v1/Ratings/{rating_data['ratingID']}/")
             self.assertEqual(response.status_code, 204)
@@ -141,9 +142,9 @@ class EndToEndTest2(TestCase):
             response = self.client.patch('/api/v1/Products/1/', content_type='application/json', data=product_dec)   
             self.assertEqual(response.status_code, 200)
 
-            all_objects = muppy.get_objects()
-            sum1 = summary.summarize(all_objects)
-            summary.print_(sum1) 
+            # all_objects = muppy.get_objects()
+            # sum1 = summary.summarize(all_objects)
+            # summary.print_(sum1) 
 
             # delete
             response = self.client.delete(f"/api/v1/Carts/{cart['cartID']}/")
